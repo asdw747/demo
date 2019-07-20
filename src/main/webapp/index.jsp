@@ -12,8 +12,6 @@
 </head>
 <body>
 <a href="views/index.html">首页</a>
-<br>
-<a href="views/frame.html">测试</a>
 </body>
 </html>
 

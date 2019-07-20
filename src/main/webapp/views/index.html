@@ -20,7 +20,17 @@
                         <label class="weui-label">URL</label>
                     </div>
                     <div>
-                        <input class="weui-input" type="text" placeholder="请输入url">
+                        <input id="url" class="weui-input" type="text" placeholder="请输入url">
+                    </div>
+                </div>
+
+                <div class="weui-cell weui-cell_select weui-cell_select-after">
+                    <div class="weui-cell__hd">
+                        <label class="weui-label">Location</label>
+                    </div>
+                    <div class="weui-cell__hd">
+                        <select id="location" class="weui-select" name="operation_type">
+                        </select>
                     </div>
                 </div>
 
@@ -29,7 +39,7 @@
                         <label class="weui-label">输入参数</label>
                     </div>
                     <div>
-                        <input class="weui-input" type="text" placeholder="输入参数">
+                        <input id="input_param" class="weui-input" type="text" placeholder="输入参数">
                     </div>
                 </div>
 
@@ -38,7 +48,7 @@
                         <label class="weui-label">输出参数</label>
                     </div>
                     <div>
-                        <input class="weui-input" type="text" placeholder="输出参数">
+                        <input id="output_param" class="weui-input" type="text" placeholder="输出参数">
                     </div>
                 </div>
 
@@ -47,7 +57,7 @@
                         <label class="weui-label">支持回调</label>
                     </div>
                     <div class="weui-cell__ft">
-                        <input type="checkbox" class="weui-switch">
+                        <input id="call_back" type="checkbox" class="weui-switch">
                     </div>
                 </div>
 
@@ -56,9 +66,7 @@
                         <label class="weui-label">操作类型</label>
                     </div>
                     <div class="weui-cell__hd">
-                        <select class="weui-select" name="operation_type">
-                            <option value="1">查询</option>
-                            <option value="2">其它</option>
+                        <select id="operation" class="weui-select" name="operation_type">
                         </select>
                     </div>
                 </div>
@@ -71,18 +79,88 @@
 </div>
 
 
-<script src="https://cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script>
+<script src="../js/jquery/jquery.min.js"></script>
+<!--<script src="https://cdn.bootcss.com/jquery/1.11.0/jquery.min.js"></script>-->
 <script src="https://cdn.bootcss.com/jquery-weui/1.2.1/js/jquery-weui.min.js"></script>
 
 <script src="https://cdn.bootcss.com/jquery-weui/1.2.1/js/swiper.min.js"></script>
 <script src="https://cdn.bootcss.com/jquery-weui/1.2.1/js/city-picker.min.js"></script>
 <script>
     $(document).ready(function(){
+        jQuery.ajax({
+            type: 'GET',
+            url: '/demo/home/info.do',
+            cache: false,
+            contentType: false,
+            success: function (data) {
+                var locations = string2JsonArray(JSON.stringify(data.locations));
+                for (var i=0; i<locations.length; i++) {
+                    jQuery('#location').append(
+                        '<option value="' + locations[i].value + '">' + locations[i].desc + '</option>'
+                    );
+                }
 
+                var operations = string2JsonArray(JSON.stringify(data.operations));
+                for (var i=0; i<locations.length; i++) {
+                    jQuery('#operation').append(
+                        '<option value="' + operations[i].value + '">' + operations[i].desc + '</option>'
+                    );
+                }
+
+                jQuery('#location').val(1);
+                jQuery('#operation').val(1);
+            }
+        });
     });
     
     function submitParams() {
-        alert("我是你爸爸")
+        // var formdata = new FormData();
+        // formdata.append("url", jQuery("#url").val());
+        // formdata.append("location", jQuery("#location").val());
+        // formdata.append("input", jQuery("#input_param").val());
+        // formdata.append("output", jQuery("#output_param").val());
+        // formdata.append("callBack", jQuery("#call_back").val());
+        // formdata.append("operation", jQuery("#operation").val());
+
+        var data = {
+            "url": jQuery("#url").val(),
+            "location": jQuery("#location").val(),
+            "input": jQuery("#input_param").val(),
+            "output": jQuery("#output_param").val(),
+            "callBack": jQuery("#call_back").val(),
+            "operation": jQuery("#operation").val()
+        };
+
+        jQuery.ajax({
+            type: 'POST',
+            url: '/demo/home/check.do',
+            data: data,
+            dataType: 'json',
+            success: function (data) {
+               alert(JSON.stringify(data));
+            }
+        });
+    }
+
+    function string2JsonArray(s) {
+        // [的位置
+        var sBeginIndex = s.indexOf("[");
+        // ]的位置
+        var sEndIndex = s.indexOf("]");
+        if (sBeginIndex == -1 || sEndIndex == -1) return null;
+        // 最后逗号方便统一处理
+        var jastr = s.substring(sBeginIndex + 1, sEndIndex).trim() + ",";
+        var sArr = jastr.split("{");  // sArr第一个成员为空
+        //
+        var joCount = sArr.length - 1;
+        var result = new Array(joCount);
+        for (var i = 0; i < joCount; i++) {
+            // 最后,号的位置
+            var cIndex = sArr[i + 1].lastIndexOf(",");
+            result[i] = JSON.parse("{" + sArr[i + 1].substring(0, cIndex));
+        }
+        //
+        return result;
     }
 </script>
 
